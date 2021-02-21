@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include "utils.h"
 #include <math.h>
-
+// Laplace equation solver for HPC 
 void Jacobi( int N, int iterations, double *u, double *u_kp1, double *A){
-
+// Jacobi solver
+	
   //printf("%f \n", h);
   // f array, all ones
   double f = 1.0;
@@ -15,6 +16,8 @@ void Jacobi( int N, int iterations, double *u, double *u_kp1, double *A){
 
   Timer t;
   t.tic();
+		
+// starting loop
   while( k < iterations ){
 
     for( int i = 0; i < N-1; i++ ){
@@ -37,7 +40,7 @@ void Jacobi( int N, int iterations, double *u, double *u_kp1, double *A){
       u[i] = u_kp1[i];
       //printf("%f \n", u[i]);
     }
-    
+    // calculating residuals
     double residual = 0.0;
     //printf("start res = %f \n", residual);
     for( int i = 0; i < N-1; i++ ){
@@ -120,6 +123,7 @@ int main(int argc, char** argv){
   double N_d = 1.0*N;
   double h = 1/(N_d+1);
   
+// allocating for u, u_k+1, and A
   double* u = (double*) malloc(N*sizeof(double));
   for( long i = 0; i < N; i++) u[i] = 0.0;
   
@@ -127,6 +131,7 @@ int main(int argc, char** argv){
   //for( long i = 0; i < N; i++) u_kp1[i] = 0.0;
 
   double* A = (double*) malloc(N*N*sizeof(double));
+	// filling A array
   for( long i = 0; i < N*N; i++ ) A[i] = 0.0;
   for( long i = 0; i < N; i++ ){
     if( i == N-1 ){
