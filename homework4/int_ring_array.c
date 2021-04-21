@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <mpi.h>
+
+// mpicc -g -O3 -o int_ring_array int_ring_array.c
+
+int main( int argc, char** argv){
+  
+  MPI_Init(&argc, &argv);
+
+  // how many times around the loop
+  int loopN = atoi(argv[1]);
+
+  // getting process rank
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  // getting number of ranks
+  int num_ranks;
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+
+  long mem_size = 500000;
+  int* memo = (int*) malloc(mem_size*sizeof(int));
+  for (long i = 0; i < mem_size; i++) memo[i] = 0;
+  // start timer
+  double tt = MPI_Wtime();
+  for (int i = 1 ; i <= loopN ; i++){
+    MPI_Status  status;
+
+    //  getting processor name
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    MPI_Get_processor_name(processor_name, &name_len);
+    //printf("Rank %d/%d running on %s.\n", rank, num_ranks, processor_name);
+    if (rank == 0){
+      // send message to rank + 1
+      memo[0] += 1;
+      MPI_Send(memo, mem_size, MPI_INT, rank+1, 666, MPI_COMM_WORLD);
+
+      // rank[0] processor recv from rank[size-1] processor
+      MPI_Recv(memo, mem_size, MPI_INT, num_ranks-1, 666, MPI_COMM_WORLD, &status);
+      printf("The loop is on iteration %d/%d with %d nodes, memo = %d \n", i, loopN, num_ranks, memo[0]);
+    }
+    else if (rank == num_ranks - 1){
+      // recv from rank-1 processor
+      MPI_Recv(memo, mem_size, MPI_INT, rank-1, 666, MPI_COMM_WORLD, &status);
+
+      // send to rank 0 processor
+      memo[0] += 1;
+      MPI_Send(memo, mem_size, MPI_INT, 0, 666, MPI_COMM_WORLD);
+    }
+    else{
+      // recv from rank - 1 processor
+      MPI_Recv(memo, mem_size, MPI_INT, rank-1, 666, MPI_COMM_WORLD, &status);
+
+      // send to rank 0 processor
+      memo[0] += 1; 
+      MPI_Send(memo, mem_size, MPI_INT, rank+1, 666, MPI_COMM_WORLD);
+    }
+  }
+  // print time once memo is back at rank 0
+  if (rank == 0){
+    tt = MPI_Wtime() - tt; 
+    printf("integer ring bandwidth = %e GB/s \n", loopN*mem_size*sizeof(int)/tt/1e9 );
+  }
+  free(memo);
+  MPI_Finalize();
+  
+  return 0;
+}
