@@ -190,8 +190,17 @@ int main( int argc, char *argv[]){
   printf("vectorized time for %lu repititions, grid size %lu: %6.5f \n", rep-1, N, tt.toc());
   printf("vectorized cosine(phi): %f \n", cor.p_cphi[N-1]);
 
+  aligned_free(rays);
+  aligned_free(cor.p_x);
+  aligned_free(cor.p_y);
+  aligned_free(cor.p_z);
+  aligned_free(cor.p_r);
+  aligned_free(cor.p_phi);
+  aligned_free(cor.p_theta);
+  aligned_free(cor.p_stheta);
+  aligned_free(cor.p_ctheta);
+  aligned_free(cor.p_cphi);
   return 0;
 }
-
 
 
