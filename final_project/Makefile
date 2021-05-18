@@ -1,4 +1,4 @@
-CPP=g++
+CPP=icpc
 FLAGS= -g -std=c++11 -O3 -march=native
 
 all: sphericalfromcartesian.cpp
